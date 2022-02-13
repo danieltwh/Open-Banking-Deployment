@@ -14,7 +14,7 @@
 ```
 .
 ├── frontend
-│   └── scripts
+│   ├── scripts
 │   ├── static
 │   │   ├── images
 │   │   └── stylesheets
