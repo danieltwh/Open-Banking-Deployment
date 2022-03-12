@@ -10,5 +10,3 @@ def get_banks_fx_rates(currency_from, currency_to):
         if not bank_data.empty:
             df = pd.concat([df, bank_data], ignore_index = True)
     return df
-
-print(get_banks_fx_rates('MYR','USD'))
