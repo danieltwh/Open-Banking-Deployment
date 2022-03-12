@@ -13,6 +13,8 @@ def get_access_token(url, client_id, client_secret):
         return 0
 
 def get_sc_fx_rate(currency_from, currency_to):
+    base_currency = currency_from
+    counter_currency = currency_to
     SC_ACCESS_TOKEN = get_access_token("https://sandbox-api.sc.com/retail/v1/oauth2/token", api_keys.SC_CLIENT_ID, api_keys.SC_CLIENT_SECRET)
     if SC_ACCESS_TOKEN == 0:
         print('SC: failed authentication')
@@ -25,15 +27,14 @@ def get_sc_fx_rate(currency_from, currency_to):
                     'SGDJPY', 'USDCAD', 'USDCHF', 'USDCNH', 'USDHKD', 'USDJPY', 'USDSGD']
     switch = False
     
-    currency_combined = currency_from + currency_to
+    currency_combined = base_currency + counter_currency
     if currency_combined not in supported_currencies:
-        if currency_to + currency_from not in supported_currencies:
+        if counter_currency + base_currency not in supported_currencies:
             print('SC: currency unsupported')
             return pd.DataFrame()
-        store = currency_from
-        currency_from = currency_to
-        currency_to = store
-        currency_combined = currency_from + currency_to
+        counter_currency = currency_from
+        base_currency = currency_to
+        currency_combined = base_currency + counter_currency
         switch = True
 
     url = "https://sandbox-api.sc.com/retail/v1/fx-rates?currency=" + currency_combined
@@ -54,11 +55,11 @@ def get_sc_fx_rate(currency_from, currency_to):
         buying_rate = float(data['buy-price'])
         selling_rate = float(data['sell-price'])
         if switch:
-            values = [{'Bank': 'Standard Chartered', 'Currency From': currency_to, 'Currency To': currency_from,
-                'Buying Rate': 1 / buying_rate, 'Selling Rate': 1 / selling_rate}]
+            values = [{'Bank': 'Standard Chartered', 'Currency From': currency_from, 'Currency To': currency_to,
+                'Exchange Rate': buying_rate}]
         else:
-            values = [{'Bank':'Standard Chartered', 'Currency From':currency_from, 'Currency To':currency_to,
-                'Buying Rate':buying_rate, 'Selling Rate':selling_rate}]
+            values = [{'Bank': 'Standard Chartered', 'Currency From': currency_from, 'Currency To': currency_to,
+                'Exchange Rate': 1 / selling_rate}]
         df = pd.DataFrame(values)
         return df
     else:
