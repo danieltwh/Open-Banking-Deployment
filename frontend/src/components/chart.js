@@ -1,83 +1,170 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import axios from "axios";
-import format from "date-fns/format";
-import parse from "date-fns/parse";
-import parseISO from "date-fns/parseISO";
+import { useEffect, useState } from "react";
 import { Chart } from "react-google-charts";
-import data from "../EUR_USD_Labelled_v1.csv";
-import { csv } from "d3";
-import { Box } from "@mui/material";
+import getDay from 'date-fns/getDay'
+import parse from 'date-fns/parse';
+import {subDays} from "date-fns"
+import format from 'date-fns/format'
+import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-
+import ButtonGroup from "@mui/material/ButtonGroup";
+import Avatar from "@mui/material/Avatar";
+import AvatarGroup from "@mui/material/AvatarGroup";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import EURO from "./euro.jpg";
+import USD from "./usd.jpg";
+import SGD from "./sgd.jpg";
+import { Box } from "@mui/system";
 const URL = "https://openbanking-application.herokuapp.com/";
-const SAMPLE_URL =
-  "https://openbanking-application.herokuapp.com/fx?start=2015-10-10&end=2017-10-10";
-function LineChart() {
+
+export const options = {
+  title: "EURO/USD exchange rate",
+  height: 500,
+  pointSize: 1,
+  colors: ["black"],
+  legend: "none",
+  axes: {
+    y: {
+      Temps: { label: "Temps (Celsius)" },
+    },
+  },
+};
+
+export default function TestChart() {
   const [pts, setPts] = useState([]);
-  const [option, setOption] = useState(null);
+  const today = new Date();
+  const lastMonth = subDays(today, 30);
+  const lastThreeMonth = subDays(today, 90);
+  const lastYear = subDays(today, 365);
+  const [start, setStart] = useState(format(lastMonth, 'yyyy-MM-dd'));
+  const end = format(today, 'yyyy-MM-dd');
 
   useEffect(() => {
-    axios.get(SAMPLE_URL)
-    .then((res) => console.log(res))
-    console.log("responss")
+    axios.get(`${URL}fx?start=${start}&end=${end}`)
+    .then((res) => res.data)
+    .then(data => {
     var points = [
       [
         { type: "date", label: "Day" },
-        "Average temperature",
-        {'type': 'string', 'role': 'style'},
-        
-      ],   
+        "FX rate",
+        { type: "string", role: "style" },
+      ],
     ];
+    console.log(`${URL}fx?start=${start}&end=${end}`)
 
-    csv(data).then((data) => {
       data.forEach((e) => {
-        // const date = parseISO(e.Date);
-        points.push([parseISO('2014-12-12'), -0.5, 'point { size: 4; shape-type: triangle; fill-color: green; }'])
-       
-        // points.push([
-        //   new Date(2016, 0, 0),
-        //   parseFloat(e.Price),
-        //   e.label == 2
-        //     ? "point { size: 4; shape-type: triangle; fill-color: green; }"
-        //     : e.label == 1
-        //     ? "point { size: 4; shape-type: triangle; fill-color: red; shape-rotation: 180; }"
-        //     : null,
-        // ]);
+        //console.log(parse(e.date, "EEEE, dd MMM yyyy' 00:00:00 GMT'", new Date()) )
+        //console.log(e.date)
+        //console.log(e.price)
+        const str =
+          e.label == 2
+            ? "point { size: 4; shape-type: triangle; fill-color: green; }"
+            : e.label == 1
+            ? "point { size: 4; shape-type: triangle; fill-color: red; shape-rotation: 180; }"
+            : "point { size: 0; }";
+        points.push([parse(e.date, "EEEE, dd MMM yyyy' 00:00:00 GMT'", new Date()), parseFloat(e.price), str]);
       });
-      setPts(points.slice(0, 265));
-    });
-  }, []);
-  const options = {
-    title: "EUR_USD",
-    hAxis: {
-      title: "Date",
-      viewWindow: { min: 0, max: 265 },
-      gridlines: { count: 30 },
-    },
-    vAxis: { title: "FX rate", viewWindow: { min: 1.25, max: 1.4 } },
-    legend: "none",
-    lineWidth: 2,
-    colors: ["black"],
-    pointSize: 1,
-    // pointShape: { type: "triangle" },
-  };
-
-
+    setPts(points); })
+  }, [start]);
   return (
-    <Box>
-      {/* <Button variant="outlined"> 
-        Date Picker
-    </Button> */}
+    <div>
+        <Box justifyContent="flex-end" display="flex" sx={{marginRight:"100px"}}
+      >
+          <ButtonGroup variant="outlined" aria-label="outlined primary button group">
+        <Button onClick={() => {setStart(format(lastMonth, 'yyyy-MM-dd')); console.log(lastMonth)}}>1 Month</Button>
+        <Button onClick={() => {setStart(format(lastThreeMonth, 'yyyy-MM-dd')); console.log(lastThreeMonth)}}>3 Months</Button>
+        <Button onClick={() => {setStart(format(lastYear, 'yyyy-MM-dd')); console.log(lastYear)}}>1 Year</Button>
+        <Button> 3 Years</Button>
+        </ButtonGroup>
+      </Box>
       <Chart
         chartType="LineChart"
+        width="100%"
+        height="500px"
         data={pts}
         options={options}
-        width="100%"
-        height="600px"
-        legendToggle
       />
-    </Box>
+    
+      <Stack direction="row" spacing={1}>
+        <Card
+          sx={{
+            marginLeft: "120px",
+            width: "250px",
+            backgroundColor: "#9be4fa",
+          }}
+        >
+          <CardHeader
+            avatar={
+              <AvatarGroup total={2}>
+                <Avatar alt="Euro" src={EURO} />
+                <Avatar alt="USD" src={USD} />
+              </AvatarGroup>
+            }
+            title="EUROUSD"
+            subheader="Euro / U.S. Dollar"
+          />
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              Placeholder
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ width: "250px" }}>
+          <CardHeader
+            avatar={
+              <AvatarGroup total={2}>
+                <Avatar alt="USD" src={USD} />
+                <Avatar alt="SGD" src={SGD} />
+              </AvatarGroup>
+            }
+            title="USDSGD"
+            subheader=" U.S. Dollar / Singapore Dollar"
+          />
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ width: "250px" }}>
+          <CardHeader
+            avatar={
+              <AvatarGroup total={2}>
+                <Avatar alt="Euro" src={EURO} />
+                <Avatar alt="SGD" src={SGD} />
+              </AvatarGroup>
+            }
+            title="EUROSGD"
+            subheader="Euro / Singapore Dollar"
+          />
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ width: "250px" }}>
+          <CardHeader
+            avatar={
+              <AvatarGroup total={2}>
+                <Avatar alt="Usd" src={USD} />
+                <Avatar alt="Euro" src={EURO} />              
+              </AvatarGroup>
+            }
+            title="USDEURO"
+            subheader=" U.S. Dollar / Euro"
+          />
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              Placeholder
+            </Typography>
+          </CardContent>
+        </Card>
+      </Stack>
+    </div>
   );
 }
-
-export default LineChart;
