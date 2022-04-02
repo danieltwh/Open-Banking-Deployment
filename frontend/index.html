@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="eng">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Banking</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+  </head>
+  <body>
+    <div class="chart-container" style="position: center; height:40vh; width:90vw">
+        <canvas id="chart"></canvas>
+    </div>
+    <script>
+
+      drawChart();
+      async function drawChart() {
+        const dataset = await getData();
+        const data = {
+          labels: dataset.x_axis.slice(0, 365),
+          datasets: [
+            {
+              label: "EUR_USD",
+              borderColor: 'black',
+              backgroundColor: function(context) {
+                    const index = context.dataIndex;
+                    const value = dataset.label[index];
+                    return value == 0 ? 'white' : value == 1 ? 'red' :    
+                        'green';
+                },
+              data: dataset.y_axis.slice(0, 365),
+            },
+          ],
+        };
+
+        const config = {
+          type: "line",
+          data: data,
+          options: {},
+        };
+        const myChart = new Chart(document.getElementById("chart"), config);
+      }
+      
+      async function getData() {
+        const x_axis = [];
+        const label = [];
+        const y_axis = [];
+        const response = await fetch("./sample_data/EUR_USD_Labelled_v1.csv");
+        const data = await response.text();
+        const rows = data.split("\n").slice(2);
+        rows.forEach((row) => {
+          const columns = row.split(",");
+          x_axis.push(columns[0]);
+          y_axis.push(columns[1]);
+          label.push(columns[7]);
+        });
+        
+        return {x_axis, y_axis, label};
+      }
+    </script>
+  </body>
+</html>
