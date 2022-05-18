@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
-import { csv } from "d3";
-import data from "../newsapiorg_labelling.csv";
-import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import axios from "axios";
+import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -24,47 +22,58 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 export default function News() {
+  const [limit, setLimit] = useState(10);
   const [title, setTitle] = useState([]);
   const [label, setLabel] = useState([]);
-  const [url, setUrl] = useState([]);
+  // const [url, setUrl] = useState([]);
 
   useEffect(() => {
-    csv(data).then((data) => {
-      const title = [];
-      const url = [];
-      const label = [];
-      data.forEach((e) => {
-        title.push(e.publishedAt);
-        url.push(e.content);
-        label.push(e.include == "" ? "0" : e.include);
+    axios
+      .get(`${process.env.REACT_APP_URL}news?limit=${limit}&token=${process.env.REACT_APP_TOKEN}`)
+      .then((res) => res.data)
+      .then((data) => {
+        const title = [];
+        // const url = [];
+        const label = [];
+        data.forEach((e) => {
+          title.push(e.title);
+          label.push(e.sentiment);
+        });
+        setTitle(title);
+        setLabel(label);
+        // setUrl(url);
+        // console.log(title);
+        // console.log(label);
       });
-      setTitle(title);
-      setLabel(label);
-      setUrl(url);
-    });
-  }, []);
+  }, [limit]);
 
   return (
-    // <div style={{ height: 250, width: "80%" }}>
-      
-      <TableContainer sx={{margin:'auto', width:"80%"}} component={Paper}>
-        <Table sx={{ minWidth: 200 }}>
-          <TableHead>
+    <TableContainer sx={{ margin: "auto", width: "80%" }} component={Paper}>
+      <Table sx={{ minWidth: 200 }}>
+        <TableHead>
           <TableRow>
             <StyledTableCell>News</StyledTableCell>
-            <StyledTableCell>Sentiment</StyledTableCell>   
+            <StyledTableCell>Sentiment</StyledTableCell>
           </TableRow>
         </TableHead>
-          <TableBody>
-            {title.map((t, index) => (
-              <TableRow>
-                <StyledTableCell><Link href={url[index]}>{t}</Link></StyledTableCell>
-                <StyledTableCell>{label[index] == "-1" ? <ArrowDropDownIcon color="error"/> : <ArrowDropUpIcon color="success"/>} </StyledTableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    // </div>
+        <TableBody>
+          {title.map((t, index) => (
+            <TableRow>
+              <StyledTableCell>
+                {/* <Link href={url[index]}>{t}</Link> */}
+                {t}
+              </StyledTableCell>
+              <StyledTableCell>
+                {label[index] == "-1" ? (
+                  <ArrowDropDownIcon color="error" />
+                ) : (
+                  <ArrowDropUpIcon color="success" />
+                )}{" "}
+              </StyledTableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }

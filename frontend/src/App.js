@@ -1,31 +1,25 @@
 import "./App.css";
-import LineChart from "./components/chart";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { styled } from "@mui/material";
 import AppAppBar from "./components/appBar";
-import { Grid } from "@mui/material";
-import News from "./components/News";
-import TestChart from "./testChart";
+import MainPage from "./pages/main";
+import AboutUs from "./pages/about";
 
 const AppBarHeader = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
+  marginBottom: 20,
 }));
 
 function App() {
   return (
-    <div className="App">
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <AppAppBar />
-          <AppBarHeader />
-        </Grid>
-        <Grid item xs={12}>
-          <TestChart />
-        </Grid>
-        <Grid item xs={12}>
-          <News />
-        </Grid>
-      </Grid>
-    </div>
+    <BrowserRouter>
+      <AppAppBar />
+      <AppBarHeader />
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/about" element={<AboutUs />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
