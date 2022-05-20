@@ -1,0 +1,8 @@
+yfinance
+pandas
+requests
+numpy
+matplotlib
+tensorflow-cpu
+joblib
+scikit-learn == 1.0.2

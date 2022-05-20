@@ -1,0 +1,5 @@
+newsapi-python
+numpy
+pandas
+requests
+datetime
